@@ -1,22 +1,17 @@
 import os
 
 import cv2
-import numpy as np
 from skimage import io
 
 
-def save_video(frames):
-    width = 32
-    height = 32
+def save_video(frame_dirs):
     FPS = 24
 
     fourcc = cv2.VideoWriter_fourcc(*'MP42')
-    video = cv2.VideoWriter('./genetic.avi', fourcc, float(FPS), (width, height))
+    video = cv2.VideoWriter(os.path.join('.', 'output_data', 'video', 'genetic.avi'),
+                            fourcc, float(FPS), io.imread(frame_dirs[0]).shape, isColor=False)
 
-    output_folder = 'C:/Users/Philip/Desktop/Python/Genetic Image/output_data'
-    for item in os.listdir(output_folder):
-        im_path = os.path.join(output_folder, item)
+    for im_path in frame_dirs:
         im = io.imread(im_path)
-        frame = np.array([[[c] * 3 for c in r] for r in im])
-        video.write(frame)
+        video.write(im)
     video.release()

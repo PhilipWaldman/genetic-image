@@ -6,6 +6,8 @@ import numpy as np
 from skimage import io
 from skimage.transform import resize
 
+from save_video import save_video
+
 
 class Image:
     def __init__(self, shape):
@@ -77,11 +79,12 @@ def train_gens(generations, mutation_rate):
         pop.natural_selection(mutation_rate)
         if False in (prev_best.image == pop.images[0].image):
             prev_best = pop.images[0]
-            pop.images[0].save_image(os.path.join('output_data', f'gen {gen}.png'))
+            pop.images[0].save_image(os.path.join(image_save_path, f'gen {gen}.png'))
             print(f'Best fitness: {pop.images[0].fitness}')
 
 
 def train_acc(accuracy, mutation_rate):
+    frame_dirs = []
     prev_best = pop.images[0]
     gen = 0
     acc = pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1])
@@ -92,21 +95,26 @@ def train_acc(accuracy, mutation_rate):
         if False in (prev_best.image == pop.images[0].image):
             acc = (pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1]))
             prev_best = pop.images[0]
-            pop.images[0].save_image(os.path.join('output_data', f'gen {gen}.png'))
+            pop.images[0].save_image(os.path.join(image_save_path, f'gen {gen}.png'))
+            frame_dirs.append(os.path.join(image_save_path, f'gen {gen}.png'))
             print(f'Best fitness: {pop.images[0].fitness}')
             print(f'Accuracy: {acc}')
+    return frame_dirs
 
 
-training_folder = os.path.join('training_data', 'triangle')
+image_save_path = os.path.join('output_data', 'images')
+training_folder = os.path.join('training_data', 'grid')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
-training_images = [resize(io.imread(path, as_gray=True), (32, 32)) for path in training_paths]
+training_images = [resize(io.imread(path, as_gray=True), (8,8)) for path in training_paths]
 pop = Population(100, training_images[0].shape)
 
 t0 = time.perf_counter()
 # train_gens(10000, 1 / 1024)
-train_acc(0.75, 1 / 128)
+frame_locs = train_acc(0.7, 1 / 64)
 t1 = time.perf_counter()
 t = t1 - t0
 print(f'\nTrained for {round(t, 3)} seconds\n'
       f'That is {round(t / 60, 3)} minutes\n'
       f'Or {round(t / (60 * 60), 3)} hours')
+
+save_video(frame_locs)
