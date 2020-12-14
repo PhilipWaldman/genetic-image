@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 import numpy as np
 from skimage import io
@@ -100,5 +101,12 @@ training_folder = os.path.join('training_data', 'triangle')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
 training_images = [resize(io.imread(path, as_gray=True), (32, 32)) for path in training_paths]
 pop = Population(100, training_images[0].shape)
+
+t0 = time.perf_counter()
 # train_gens(10000, 1 / 1024)
 train_acc(0.75, 1 / 128)
+t1 = time.perf_counter()
+t = t1 - t0
+print(f'\nTrained for {round(t, 3)} seconds\n'
+      f'That is {round(t / 60, 3)} minutes\n'
+      f'Or {round(t / (60 * 60), 3)} hours')
