@@ -70,15 +70,18 @@ class Population:
 
 
 def train(generations):
+    prev_best = pop.images[0]
     for gen in range(generations):
         print(f'Training generation {gen}...')
         pop.natural_selection()
         print(f'Best fitness: {pop.images[0].fitness}')
-        pop.images[0].save_image(os.path.join('output_data', f'gen {gen}.png'))
+        if False in (prev_best.image == pop.images[0].image):
+            prev_best = pop.images[0]
+            pop.images[0].save_image(os.path.join('output_data', f'gen {gen}.png'))
 
 
 training_folder = os.path.join('training_data', 'triangle')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
 training_images = [resize(io.imread(path, as_gray=True), (32, 32)) for path in training_paths]
 pop = Population(50, training_images[0].shape)
-train(10000)
+train(1000)
