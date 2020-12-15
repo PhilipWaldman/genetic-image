@@ -103,14 +103,14 @@ def train_acc(accuracy, mutation_rate):
 
 
 image_save_path = os.path.join('output_data', 'images')
-training_folder = os.path.join('training_data', 'grid')
+training_folder = os.path.join('training_data', 'triangle')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
-training_images = [resize(io.imread(path, as_gray=True), (8,8)) for path in training_paths]
+training_images = [resize(io.imread(path, as_gray=True), (64, 64)) for path in training_paths]
 pop = Population(100, training_images[0].shape)
 
 t0 = time.perf_counter()
 # train_gens(10000, 1 / 1024)
-frame_locs = train_acc(0.7, 1 / 64)
+frame_locs = train_acc(0.75, 1 / 100)
 t1 = time.perf_counter()
 t = t1 - t0
 print(f'\nTrained for {round(t, 3)} seconds\n'

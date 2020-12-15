@@ -7,6 +7,7 @@ from skimage import io
 def save_video(frame_dirs):
     FPS = 24
 
+    # TODO: needs to be saved without compression
     fourcc = cv2.VideoWriter_fourcc(*'MP42')
     video = cv2.VideoWriter(os.path.join('.', 'output_data', 'video', 'genetic.avi'),
                             fourcc, float(FPS), io.imread(frame_dirs[0]).shape, isColor=False)
