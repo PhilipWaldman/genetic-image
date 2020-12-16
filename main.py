@@ -10,9 +10,17 @@ from save_video import save_video
 
 
 class Image:
-    def __init__(self, shape):
-        """ Initializes an image with random noise of the specified shape. """
-        self.image = np.random.random(size=shape)
+    def __init__(self, shape: tuple, initial_image=None):
+        """ Initializes an image of the specified shape. If an initial image is enter, that will be set as the image.
+        It initial_image is left empty, an image with random noise will be generated.
+
+        :param shape: A tuple of the shape of the image. (# of rows, # of cols)
+        :param initial_image: A numpy array of the image to start as.
+        """
+        if initial_image:
+            self.image = initial_image
+        else:
+            self.image = np.random.random(size=shape)
         self.fitness = 0
 
     def calc_fitness(self):
@@ -40,16 +48,6 @@ class Image:
         io.imsave(save_to, (self.image * 255).astype(np.uint8))
         return save_to
 
-    def copy(self):
-        """ Returns a copy of the image.
-
-         :return: A copy of the image.
-         """
-        im = Image(self.image.shape)
-        im.image = self.image.copy()
-        im.fitness = self.fitness
-        return im
-
 
 class Population:
     def __init__(self, pop_size: int, shape):
@@ -73,13 +71,13 @@ class Population:
     def best_image(self):
         """ Finds and returns the image with the highest fitness.
 
-        :return: A copy of the best image in the population.
+        :return: The best image in the population.
         """
         best_im = Image((1, 1))
         for image in self.images:
             if image.fitness > best_im.fitness:
                 best_im = image
-        return best_im.copy()
+        return best_im
 
     def calculate_fitnesses(self):
         """ Calculates the fitnesses of all the images and computes the sum of all the fitnesses. """
@@ -91,14 +89,18 @@ class Population:
     def select_parent(self):
         """ Selects a random parent weighted by their fitness.
 
-        :return: A copy of a randomly selected image from the population.
+        :return: A randomly selected image from the population.
         """
         rand = random.random() * self.fitness_sum
         running_sum = 0
         for image in self.images:
             running_sum += image.fitness
             if running_sum >= rand:
-                return image.copy()
+                return image
+
+
+def calc_accuracy():
+    return pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1] * len(training_images))
 
 
 def train_generation(gen: int, prev_best: Image) -> tuple:
@@ -110,7 +112,7 @@ def train_generation(gen: int, prev_best: Image) -> tuple:
     """
     print(f'Training generation {gen}...')
     pop.natural_selection()
-    acc = (pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1]))
+    acc = calc_accuracy()
     if False in (prev_best.image == pop.images[0].image):
         saved_to = pop.images[0].save_image(f'gen {gen}')
         frame_dirs.append(saved_to)
@@ -124,6 +126,7 @@ def train_generations(generations: int):
 
     :param generations: The number of generations to train for.
     """
+    print(f'Going to train for {generations} generations...')
     prev_best = pop.images[0]
     for gen in range(1, generations + 1):
         prev_best, better_acc = train_generation(gen, prev_best)
@@ -136,9 +139,10 @@ def train_accuracy(accuracy: float):
 
     :param accuracy: The accuracy to train to. Float in range [0, 1].
     """
+    print(f'Going to train until the accuracy has reached {accuracy}...')
     prev_best = pop.images[0]
     gen = 0
-    acc = pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1])
+    acc = calc_accuracy()
     while acc < accuracy:
         gen += 1
         better_image, better_acc = train_generation(gen, prev_best)
@@ -156,6 +160,7 @@ def train_time(seconds: int, minutes=0, hours=0):
     :param hours: The amount of hours to train. Default = 0
     """
     time_to_train = seconds + minutes * 60 + hours * 60 * 60
+    print(f'Going to train for {seconds} seconds, {minutes} minutes, and {hours} hours...')
     t_start = time.time()
     prev_best = pop.images[0]
     gen = 0
