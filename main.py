@@ -48,6 +48,16 @@ class Image:
         io.imsave(save_to, (self.image * 255).astype(np.uint8))
         return save_to
 
+    def copy(self):
+        """ Returns a copy of the image.
+
+         :return: A copy of the image.
+         """
+        im = Image(self.image.shape)
+        im.image = self.image.copy()
+        im.fitness = self.fitness
+        return im
+
 
 class Population:
     def __init__(self, pop_size: int, shape):
@@ -71,13 +81,13 @@ class Population:
     def best_image(self):
         """ Finds and returns the image with the highest fitness.
 
-        :return: The best image in the population.
+        :return: A copy of the best image in the population.
         """
         best_im = Image((1, 1))
         for image in self.images:
             if image.fitness > best_im.fitness:
                 best_im = image
-        return best_im
+        return best_im.copy()
 
     def calculate_fitnesses(self):
         """ Calculates the fitnesses of all the images and computes the sum of all the fitnesses. """
@@ -89,14 +99,14 @@ class Population:
     def select_parent(self):
         """ Selects a random parent weighted by their fitness.
 
-        :return: A randomly selected image from the population.
+        :return: A copy of a randomly selected image from the population.
         """
         rand = random.random() * self.fitness_sum
         running_sum = 0
         for image in self.images:
             running_sum += image.fitness
             if running_sum >= rand:
-                return image
+                return image.copy()
 
 
 def calc_accuracy():
@@ -171,17 +181,17 @@ def train_time(seconds: int, minutes=0, hours=0):
 
 image_save_path = os.path.join('output_data', 'images')
 frame_dirs = []
-training_folder = os.path.join('training_data', 'triangle')
+training_folder = os.path.join('training_data', 'star (200x200)')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
-training_images = [resize(io.imread(path, as_gray=True), (32, 32)) for path in training_paths]
+training_images = [resize(io.imread(path, as_gray=True), (64, 64)) for path in training_paths]
 
 pop = Population(100, training_images[0].shape)
 mutation_rate = 1 / 100
 
 t0 = time.perf_counter()
-# train_generations(100)
+# train_generations(10)
 # train_accuracy(0.75)
-train_time(10)
+train_time(0, 0, 1)
 t1 = time.perf_counter()
 
 t = t1 - t0
