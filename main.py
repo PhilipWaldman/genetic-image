@@ -6,13 +6,17 @@ import numpy as np
 from skimage import io
 from skimage.transform import resize
 
+from save_video import save_video
+
 
 class Image:
     def __init__(self, shape):
+        """ Initializes an image with random noise of the specified shape. """
         self.image = np.random.random(size=shape)
         self.fitness = 0
 
     def calc_fitness(self):
+        """ Calculates the fitness of the image and assigns it to self.fitness. """
         self.fitness = 0
         for im in training_images:
             for r in range(len(im)):
@@ -20,15 +24,27 @@ class Image:
                     self.fitness += 1 - abs(im[r][c] - self.image[r][c])
 
     def mutate(self):
+        """ Mutates the image. Every pixel in the image has a mutation_rate chance of being set to a random value. """
         for r in range(len(self.image)):
             for c in range(len(self.image[r])):
                 if random.random() < mutation_rate:
                     self.image[r][c] = random.random()
 
-    def save_image(self, name):
-        io.imsave(name, (self.image * 255).astype(np.uint8))
+    def save_image(self, name: str) -> str:
+        """ Saves the image with the specified name and returns where it is saved.
+
+        :param name: The name of the image.
+        :return: Where the image is saved. With its directory and file name.
+        """
+        save_to = os.path.join(image_save_path, f'{name}.png')
+        io.imsave(save_to, (self.image * 255).astype(np.uint8))
+        return save_to
 
     def copy(self):
+        """ Returns a copy of the image.
+
+         :return: A copy of the image.
+         """
         im = Image(self.image.shape)
         im.image = self.image.copy()
         im.fitness = self.fitness
@@ -36,11 +52,17 @@ class Image:
 
 
 class Population:
-    def __init__(self, pop_size, shape):
+    def __init__(self, pop_size: int, shape):
+        """ Initializes a population of specified size of images with specified size.
+
+        :param pop_size: The population size.
+        :param shape: The shape of the images in the population.
+        """
         self.images = [Image(shape) for _ in range(pop_size)]
         self.fitness_sum = 0
 
     def natural_selection(self):
+        """ Preforms natural selection in the population. """
         self.calculate_fitnesses()
         new_images = [self.best_image()]
         for i in range(len(self.images) - 1):
@@ -49,6 +71,10 @@ class Population:
         self.images = new_images.copy()
 
     def best_image(self):
+        """ Finds and returns the image with the highest fitness.
+
+        :return: A copy of the best image in the population.
+        """
         best_im = Image((1, 1))
         for image in self.images:
             if image.fitness > best_im.fitness:
@@ -56,12 +82,17 @@ class Population:
         return best_im.copy()
 
     def calculate_fitnesses(self):
+        """ Calculates the fitnesses of all the images and computes the sum of all the fitnesses. """
         self.fitness_sum = 0
         for image in self.images:
             image.calc_fitness()
             self.fitness_sum += image.fitness
 
     def select_parent(self):
+        """ Selects a random parent weighted by their fitness.
+
+        :return: A copy of a randomly selected image from the population.
+        """
         rand = random.random() * self.fitness_sum
         running_sum = 0
         for image in self.images:
@@ -70,28 +101,41 @@ class Population:
                 return image.copy()
 
 
-def train_generation(gen, prev_best):
+def train_generation(gen: int, prev_best: Image) -> tuple:
+    """
+
+    :param gen: The current generation number.
+    :param prev_best: The best image of the previous generation.
+    :return: A tuple of the best image of the current generation and its accuracy.
+    """
     print(f'Training generation {gen}...')
     pop.natural_selection()
+    acc = (pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1]))
     if False in (prev_best.image == pop.images[0].image):
-        pop.images[0].save_image(os.path.join(image_save_path, f'gen {gen}.png'))
-        frame_dirs.append(os.path.join(image_save_path, f'gen {gen}.png'))
+        saved_to = pop.images[0].save_image(f'gen {gen}')
+        frame_dirs.append(saved_to)
         print(f'Best fitness: {pop.images[0].fitness}')
-        acc = (pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1]))
         print(f'Accuracy: {acc}')
-        return pop.images[0], acc
-    return None, None
+    return pop.images[0], acc
 
 
-def train_generations(generations):
+def train_generations(generations: int):
+    """ Trains for the specified number of generations.
+
+    :param generations: The number of generations to train for.
+    """
     prev_best = pop.images[0]
     for gen in range(1, generations + 1):
-        better_image, better_acc = train_generation(gen, prev_best)
-        if better_image:
-            prev_best = better_image
+        prev_best, better_acc = train_generation(gen, prev_best)
 
 
-def train_accuracy(accuracy):
+def train_accuracy(accuracy: float):
+    """ Trains until the specified accuracy is reached.\n
+    The accuracy is calculated by dividing the fitness by the maximum fitness possible. Thus, an accuracy of 1 means
+    that the generated image is exactly the same at the target image.
+
+    :param accuracy: The accuracy to train to. Float in range [0, 1].
+    """
     prev_best = pop.images[0]
     gen = 0
     acc = pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1])
@@ -103,23 +147,28 @@ def train_accuracy(accuracy):
             acc = better_acc
 
 
-def train_time(seconds, minutes=0, hours=0):
+def train_time(seconds: int, minutes=0, hours=0):
+    """ Trains for the time specified.\n
+    The time to train is the sum of all parameters. Specifically, seconds + minutes * 60 + hours * 3600
+
+    :param seconds: The amount of seconds to train.
+    :param minutes: The amount of minutes to train. Default = 0
+    :param hours: The amount of hours to train. Default = 0
+    """
     time_to_train = seconds + minutes * 60 + hours * 60 * 60
     t_start = time.time()
     prev_best = pop.images[0]
     gen = 0
     while time.time() - t_start < time_to_train:
         gen += 1
-        better_image, better_acc = train_generation(gen, prev_best)
-        if better_image:
-            prev_best = better_image
+        prev_best, better_acc = train_generation(gen, prev_best)
 
 
 image_save_path = os.path.join('output_data', 'images')
 frame_dirs = []
-training_folder = os.path.join('training_data', 'grid')
+training_folder = os.path.join('training_data', 'triangle')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
-training_images = [resize(io.imread(path, as_gray=True), (8, 8)) for path in training_paths]
+training_images = [resize(io.imread(path, as_gray=True), (32, 32)) for path in training_paths]
 
 pop = Population(100, training_images[0].shape)
 mutation_rate = 1 / 100
@@ -137,4 +186,4 @@ secs = (t - hrs * 60 * 60) - mins * 60
 print(f'\nTrained for {round(t, 3)} seconds.\n'
       f'That is {hrs} hours, {mins} minutes, and {round(secs, 3)} seconds.')
 
-# save_video(frame_dirs)
+save_video(frame_dirs)
