@@ -11,7 +11,7 @@ from save_video import save_video
 
 
 class Image:
-    def __init__(self, shape: tuple, initial_image=None):
+    def __init__(self, shape: Tuple[int, int], initial_image=None):
         """ Initializes an image of the specified shape. If an initial image is enter, that will be set as the image.
         It initial_image is left empty, an image with random noise will be generated.
 
@@ -54,14 +54,14 @@ class Image:
 
          :return: A copy of the image.
          """
-        im = Image(self.image.shape)
+        im = Image((1, 1))
         im.image = self.image.copy()
         im.fitness = self.fitness
         return im
 
 
 class Population:
-    def __init__(self, pop_size: int, shape, initial_image=None):
+    def __init__(self, pop_size: int, shape: Tuple[int, int], initial_image=None):
         """ Initializes a population of specified size of images with specified size.\n
         If an initial image is enter, that will be set as the image.
         It initial_image is left empty, an image with random noise will be generated.
@@ -127,7 +127,15 @@ def train_generation(gen: int, prev_best: Image) -> Tuple[Image, float]:
     print(f'Training generation {gen}...')
     pop.natural_selection()
     acc = calc_accuracy()
-    if False in (prev_best.image == pop.images[0].image):
+    best_changed = False
+    for r in range(len(prev_best.image)):
+        for c in range(len(prev_best.image[r])):
+            if prev_best.image[r][c] != pop.images[0].image[r][c]:
+                best_changed = True
+                break
+        if best_changed:
+            break
+    if best_changed:
         saved_to = pop.images[0].save_image(f'gen {gen}')
         frame_dirs.append(saved_to)
         print(f'Best fitness: {pop.images[0].fitness}')
@@ -143,7 +151,7 @@ def train_generations(generations: int):
     print(f'Going to train for {generations} generations...')
     prev_best = pop.images[0]
     for gen in range(1, generations + 1):
-        prev_best, better_acc = train_generation(gen, prev_best)
+        prev_best, acc = train_generation(gen, prev_best)
 
 
 def train_accuracy(accuracy: float):
@@ -159,10 +167,7 @@ def train_accuracy(accuracy: float):
     acc = calc_accuracy()
     while acc < accuracy:
         gen += 1
-        better_image, better_acc = train_generation(gen, prev_best)
-        if better_image and better_acc:
-            prev_best = better_image
-            acc = better_acc
+        prev_best, acc = train_generation(gen, prev_best)
 
 
 def train_time(seconds: float, minutes=0.0, hours=0.0):
@@ -180,7 +185,7 @@ def train_time(seconds: float, minutes=0.0, hours=0.0):
     gen = 0
     while time.time() - t_start < time_to_train:
         gen += 1
-        prev_best, better_acc = train_generation(gen, prev_best)
+        prev_best, acc = train_generation(gen, prev_best)
 
 
 image_save_path = os.path.join('output_data', 'images')
@@ -189,7 +194,7 @@ training_folder = os.path.join('training_data', 'grid')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
 training_images = [resize(io.imread(path, as_gray=True), (8, 8)) for path in training_paths]
 
-pop = Population(100, training_images[0].shape, resize(io.imread('training_data/init_grid.png', as_gray=True), (8, 8)))
+pop = Population(100, training_images[0].shape)
 mutation_rate = 1 / 100
 
 t0 = time.perf_counter()
