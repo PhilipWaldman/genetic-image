@@ -1,6 +1,7 @@
 import os
 import random
 import time
+from typing import Tuple
 
 import numpy as np
 from skimage import io
@@ -81,7 +82,7 @@ class Population:
             new_images[-1].mutate()
         self.images = new_images.copy()
 
-    def best_image(self):
+    def best_image(self) -> Image:
         """ Finds and returns the image with the highest fitness.
 
         :return: A copy of the best image in the population.
@@ -99,7 +100,7 @@ class Population:
             image.calc_fitness()
             self.fitness_sum += image.fitness
 
-    def select_parent(self):
+    def select_parent(self) -> Image:
         """ Selects a random parent weighted by their fitness.
 
         :return: A copy of a randomly selected image from the population.
@@ -116,7 +117,7 @@ def calc_accuracy():
     return pop.images[0].fitness / (pop.images[0].image.shape[0] * pop.images[0].image.shape[1] * len(training_images))
 
 
-def train_generation(gen: int, prev_best: Image) -> tuple:
+def train_generation(gen: int, prev_best: Image) -> Tuple[Image, float]:
     """
 
     :param gen: The current generation number.
@@ -164,7 +165,7 @@ def train_accuracy(accuracy: float):
             acc = better_acc
 
 
-def train_time(seconds: int, minutes=0, hours=0):
+def train_time(seconds: float, minutes=0.0, hours=0.0):
     """ Trains for the time specified.\n
     The time to train is the sum of all parameters. Specifically, seconds + minutes * 60 + hours * 3600
 
