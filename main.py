@@ -17,7 +17,7 @@ class Image:
         :param shape: A tuple of the shape of the image. (# of rows, # of cols)
         :param initial_image: A numpy array of the image to start as.
         """
-        if initial_image:
+        if initial_image is not None:
             self.image = initial_image
         else:
             self.image = np.random.random(size=shape)
@@ -60,13 +60,16 @@ class Image:
 
 
 class Population:
-    def __init__(self, pop_size: int, shape):
-        """ Initializes a population of specified size of images with specified size.
+    def __init__(self, pop_size: int, shape, initial_image=None):
+        """ Initializes a population of specified size of images with specified size.\n
+        If an initial image is enter, that will be set as the image.
+        It initial_image is left empty, an image with random noise will be generated.
 
         :param pop_size: The population size.
         :param shape: The shape of the images in the population.
+        :param initial_image: A numpy array of the image to start as.
         """
-        self.images = [Image(shape) for _ in range(pop_size)]
+        self.images = [Image(shape, initial_image) for _ in range(pop_size)]
         self.fitness_sum = 0
 
     def natural_selection(self):
@@ -181,17 +184,17 @@ def train_time(seconds: int, minutes=0, hours=0):
 
 image_save_path = os.path.join('output_data', 'images')
 frame_dirs = []
-training_folder = os.path.join('training_data', 'star (200x200)')
+training_folder = os.path.join('training_data', 'grid')
 training_paths = [os.path.join(training_folder, item) for item in os.listdir(training_folder)]
-training_images = [resize(io.imread(path, as_gray=True), (64, 64)) for path in training_paths]
+training_images = [resize(io.imread(path, as_gray=True), (8, 8)) for path in training_paths]
 
-pop = Population(100, training_images[0].shape)
+pop = Population(100, training_images[0].shape, resize(io.imread('training_data/init_grid.png', as_gray=True), (8, 8)))
 mutation_rate = 1 / 100
 
 t0 = time.perf_counter()
 # train_generations(10)
-# train_accuracy(0.75)
-train_time(0, 0, 1)
+train_accuracy(0.95)
+# train_time(0, 10)
 t1 = time.perf_counter()
 
 t = t1 - t0

@@ -5,6 +5,7 @@ from skimage import io
 
 
 def save_video(frame_dirs):
+    print('\nSaving as video...')
     FPS = 24
 
     # TODO: needs to be saved without compression
@@ -16,3 +17,4 @@ def save_video(frame_dirs):
         im = io.imread(im_path)
         video.write(im)
     video.release()
+    print('Video saved.')
