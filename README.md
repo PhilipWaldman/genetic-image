@@ -14,7 +14,7 @@ These are the image the algorithm should approach. They should be stored in a se
 This is the images every `Image` in the population will start with. This can be done to slowly transform the initial image into the target image. It is not required to specify the initial image. If it isn't specified, random noise will be used.
 
 ## Output Data
-
+ 
 
 ### Images
 
