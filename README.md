@@ -1,5 +1,5 @@
 # Genetic Image
-This program uses a genetic algorithm to generate an image that approaches the chosen training data. One or more training images can be chosen to train to. An initial image can also be chosen. The initial image is the image every `Image` in the population has at generation 0. If no initial image is specified, it will be initialized with random noise. If a generation has an `Image` with a higher fitness, it will be saved as a `.png`. At the end all these saved images will be combined into a video.
+This program uses a genetic algorithm to generate an image that approaches the chosen training data. One or more training images can be chosen to train to. An initial image can also be chosen. The initial image is the image every `Image` in the population has at generation 0. If no initial image is specified, it will be initialized with random noise. If a generation has an `Image` with a higher fitness, it will be saved as a `.png`. At the end all these saved images will be combined into a video. Training images are made grayscale to improve performance.
 
 ## Genetic Algorithm
 The genetic algorithm I use here is slightly different from the standard genetic algorithm. I did this to improve the terrible performance slightly and to add the feature of saving the current best image. This is how the modified genetic algorithm works in this program:
@@ -39,3 +39,8 @@ First the required packages have to be installed. This can be done by running `p
 
 ## Usage
 
+
+## Future Improvements
+* Input method for user to enter info.
+* Multi-thread to improve running speed.
+* Train the images in color.
