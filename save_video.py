@@ -7,7 +7,15 @@ from skimage.io import imread
 from skimage.transform import resize
 
 
-def save_video(frame_dirs, resolution: Tuple[int, int] = None):
+def save_video(frame_dirs: list, resolution: Tuple[int, int] = None):
+    """ Save the frames that are stored at the locations in the specified list as a video at 24 fps with either the
+    resolution of the frames or the specified resolution. The video is saved as a .avi with MP42 encoding (I think, I
+    don't understand the encoding stuff).
+
+    :param frame_dirs: The list of directories of the images to save as a video.
+    :param resolution: The resolution to save the video as. Default: the resolution of the images at the locations in
+    frame_dirs.
+    """
     print('\nSaving as video...')
     FPS = 24
 
